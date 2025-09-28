@@ -1,31 +1,59 @@
 package algorithms;
+
+import java.util.Arrays;
+import java.util.Comparator;
+
 public class ClosestPair {
-    static class Point {
-        double x, y;
-        Point(double x, double y) {
-            this.x = x;
-            this.y = y;
-        }
+
+    public static double closest(Point[] points) {
+        Point[] sortedByX = points.clone();
+        Arrays.sort(sortedByX, Comparator.comparingDouble(p -> p.x));
+        return closestRec(sortedByX);
     }
 
-    public static double distance(Point p1, Point p2) {
-        return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+    private static double closestRec(Point[] points) {
+        int n = points.length;
+        if (n <= 3) return bruteForce(points);
+
+        int mid = n / 2;
+        Point midPoint = points[mid];
+
+        double d1 = closestRec(Arrays.copyOfRange(points, 0, mid));
+        double d2 = closestRec(Arrays.copyOfRange(points, mid, n));
+        double d = Math.min(d1, d2);
+
+        Point[] strip = Arrays.stream(points)
+                .filter(p -> Math.abs(p.x - midPoint.x) < d)
+                .sorted(Comparator.comparingDouble(p -> p.y))
+                .toArray(Point[]::new);
+
+        return Math.min(d, stripClosest(strip, d));
     }
 
-    public static double findClosestPair(Point[] points) {
-        if (points == null || points.length < 2) {
-            throw new IllegalArgumentException("Нужно минимум 2 точки");
-        }
-        double minDist = Double.MAX_VALUE;
+    private static double bruteForce(Point[] points) {
+        double min = Double.MAX_VALUE;
         for (int i = 0; i < points.length; i++) {
             for (int j = i + 1; j < points.length; j++) {
                 double dist = distance(points[i], points[j]);
-                if (dist < minDist) {
-                    minDist = dist;
-                }
+                if (dist < min) min = dist;
             }
         }
+        return min;
+    }
 
-        return minDist;
+    private static double stripClosest(Point[] strip, double d) {
+        double min = d;
+        for (int i = 0; i < strip.length; i++) {
+            for (int j = i + 1; j < strip.length && (strip[j].y - strip[i].y) < min; j++) {
+                double dist = distance(strip[i], strip[j]);
+                if (dist < min) min = dist;
+            }
+        }
+        return min;
+    }
+
+    private static double distance(Point p1, Point p2) {
+        return Math.sqrt((p1.x - p2.x) * (p1.x - p2.x) +
+                (p1.y - p2.y) * (p1.y - p2.y));
     }
 }
