@@ -96,3 +96,54 @@ mvn test
 	•	feat(closest): divide-and-conquer + strip
 	•	docs(report): master cases & AB intuition
 	•	release: v1.0
+
+# Algorithms Project – Report
+
+## Architecture Notes
+- **MergeSort**: использует *linear merge* с одним переиспользуемым буфером. Для маленьких входов (n ≤ 16) включается *insertion sort*, что снижает накладные расходы.  
+- **QuickSort**: применяется *randomized pivot* для равномерности. Рекурсия всегда идёт в меньшую партию, а большая обрабатывается итеративно → глубина рекурсии ограничена O(log n).  
+- **Deterministic Select (Median-of-Medians)**: массив разбивается на группы по 5 элементов, выбирается медиана медиан как pivot. Рекурсия идёт только в нужную часть, всегда в меньшую половину.  
+- **Closest Pair (2D)**: сортировка по X, затем рекурсивное деление. В “strip” части проверяются только ближайшие 7–8 соседей по Y. Это даёт O(n log n).  
+
+## Recurrence Analysis
+- **MergeSort**: T(n) = 2T(n/2) + Θ(n). По Master theorem, case 2 → T(n) = Θ(n log n).  
+- **QuickSort**: T(n) = T(k) + T(n-k-1) + Θ(n). В среднем при random pivot k ≈ n/2. Получаем T(n) = Θ(n log n). Глубина стека ≲ 2·log₂n.  
+- **Deterministic Select**: T(n) = T(n/5) + T(7n/10) + Θ(n). Решение по Master/Akra–Bazzi даёт T(n) = Θ(n).  
+- **Closest Pair**: T(n) = 2T(n/2) + Θ(n). Master theorem case 2 → T(n) = Θ(n log n).  
+
+## Measurements & Plots
+Мы построили графики:  
+- **time vs n** для MergeSort, QuickSort, Select.  
+- **depth vs n** для QuickSort (подтвердилось ограничение O(log n)).  
+- На малых n insertion sort выигрывает по константам.  
+- У QuickSort случайный pivot даёт стабильность, но MergeSort обычно чуть быстрее из-за лучшей кэш-локальности.  
+- Closest Pair на практике ≈ n log n, но константы заметно больше из-за геометрической обработки.  
+
+## Summary
+- Теория и практика совпали: MergeSort и QuickSort показали Θ(n log n), Select работает за Θ(n).  
+- Расхождения проявились только в **константах**: кэш, вставки, GC → для малых размеров массива простые алгоритмы быстрее.  
+- Ограничение глубины рекурсии для QuickSort подтвердилось: фактическая глубина ≤ ~2·log₂n.  
+- Closest Pair работает как ожидалось, но требует больше памяти и времени на мелкие проверки.  
+
+## GitHub Workflow
+- **Branches**:  
+  - `main` — только стабильные релизы (v0.1, v1.0).  
+  - `feature/mergesort`, `feature/quicksort`, `feature/select`, `feature/closest`, `feature/metrics`.  
+- **Commit Storyline**:  
+  - `init: maven, junit5, ci, readme`  
+  - `feat(metrics): counters, depth tracker, CSV writer`  
+  - `feat(mergesort): baseline + reuse buffer + cutoff + tests`  
+  - `feat(quicksort): smaller-first recursion, randomized pivot + tests`  
+  - `refactor(util): partition, swap, shuffle, guards`  
+  - `feat(select): deterministic select (MoM5) + tests`  
+  - `feat(closest): divide-and-conquer implementation + tests`  
+  - `feat(cli): parse args, run algos, emit CSV`  
+  - `bench(jmh): harness for select vs sort`  
+  - `docs(report): master cases & AB intuition, initial plots`  
+  - `fix: edge cases (duplicates, tiny arrays)`  
+  - `release: v1.0`  
+
+## Testing
+- **Sorting**: проверка корректности на случайных и “враждебных” массивах. Глубина QS не превышает 2·floor(log₂n).  
+- **Select**: результат сверялся с Arrays.sort(a)[k] на 100 случайных тестах.  
+- **Closest Pair**: проверка через O(n²) алгоритм на n ≤ 2000. На больших n использовалась только быстрая версия.
