@@ -5,6 +5,9 @@ Overview
 This project implements classic divide-and-conquer algorithms and benchmarks their performance.
 All algorithms are implemented in Java with safe recursion patterns, metrics collection, and visualization.
 
+<img width="1440" height="900" alt="Снимок экрана 2025-10-01 в 15 04 58" src="https://github.com/user-attachments/assets/3662f7ee-443b-48eb-b6a1-fa941c2f7b22" />
+
+
 Algorithms included:
 	1.	MergeSort (O(n log n), Master Theorem Case 2)
 	•	Linear merge
