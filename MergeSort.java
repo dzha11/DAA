@@ -1,48 +1,39 @@
 package algorithms;
 
-// простой MergeSort с cut-off на insertion sort
 public class MergeSort {
-
-    private static final int CUTOFF = 10; // маленькие массивы сортим вставками
-
-    public static void sort(int[] arr) {
-        if (arr == null || arr.length < 2) return;
-        int[] aux = new int[arr.length];
-        mergeSort(arr, aux, 0, arr.length - 1);
+    public static void sort(int[] arr, Metrics m) {
+        m.enterRecursion();
+        mergeSort(arr, 0, arr.length - 1, m);
+        m.exitRecursion();
     }
 
-    private static void mergeSort(int[] arr, int[] aux, int left, int right) {
-        if (right - left <= CUTOFF) {
-            insertionSort(arr, left, right);
-            return;
-        }
-        int mid = (left + right) / 2;
-        mergeSort(arr, aux, left, mid);
-        mergeSort(arr, aux, mid + 1, right);
-        merge(arr, aux, left, mid, right);
+    private static void mergeSort(int[] arr, int l, int r, Metrics m) {
+        if (l >= r) return;
+        int mid = (l + r) / 2;
+        m.enterRecursion();
+        mergeSort(arr, l, mid, m);
+        mergeSort(arr, mid + 1, r, m);
+        merge(arr, l, mid, r, m);
+        m.exitRecursion();
     }
 
-    private static void merge(int[] arr, int[] aux, int left, int mid, int right) {
-        for (int i = left; i <= right; i++) aux[i] = arr[i];
+    private static void merge(int[] arr, int l, int mid, int r, Metrics m) {
+        int n1 = mid - l + 1;
+        int n2 = r - mid;
+        int[] L = new int[n1];
+        int[] R = new int[n2];
+        m.incAllocations(); m.incAllocations();
 
-        int i = left, j = mid + 1;
-        for (int k = left; k <= right; k++) {
-            if (i > mid) arr[k] = aux[j++];
-            else if (j > right) arr[k] = aux[i++];
-            else if (aux[j] < aux[i]) arr[k] = aux[j++];
-            else arr[k] = aux[i++];
-        }
-    }
+        System.arraycopy(arr, l, L, 0, n1);
+        System.arraycopy(arr, mid + 1, R, 0, n2);
 
-    private static void insertionSort(int[] arr, int left, int right) {
-        for (int i = left + 1; i <= right; i++) {
-            int key = arr[i];
-            int j = i - 1;
-            while (j >= left && arr[j] > key) {
-                arr[j + 1] = arr[j];
-                j--;
-            }
-            arr[j + 1] = key;
+        int i = 0, j = 0, k = l;
+        while (i < n1 && j < n2) {
+            m.incComparisons();
+            if (L[i] <= R[j]) arr[k++] = L[i++];
+            else arr[k++] = R[j++];
         }
+        while (i < n1) arr[k++] = L[i++];
+        while (j < n2) arr[k++] = R[j++];
     }
 }
