@@ -1,31 +1,57 @@
 package algorithms;
 
-import java.util.Arrays;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Random;
 
 public class Main {
-    public static void main(String[] args) {
-        int[] arr1 = {5, 2, 9, 1, 3};
-        MergeSort.sort(arr1);
-        System.out.println("MergeSort: " + Arrays.toString(arr1));
+    public static void main(String[] args) throws IOException {
+        Metrics metrics = new Metrics();
+        Random rnd = new Random();
 
-        int[] arr2 = {7, 4, 1, 9, 2};
-        QuickSort.sort(arr2);
-        System.out.println("QuickSort: " + Arrays.toString(arr2));
+        try (FileWriter out = new FileWriter("results.csv")) {
+            out.write("algo,n,size,comparisons,allocations,maxDepth\n");
 
-        int[] arr3 = {10, 4, 5, 8, 6, 11, 26};
-        int k = 3;
-        int kth = DeterministicSelect.select(arr3, k);
-        System.out.println("k=" + k + " element = " + kth);
+            // MergeSort
+            for (int n = 100; n <= 1000; n += 100) {
+                int[] arr = rnd.ints(n, -1000, 1000).toArray();
+                metrics.reset();
+                MergeSort.sort(arr, metrics);
+                out.write("mergesort," + n + "," + metrics.getComparisons() + "," +
+                        metrics.getAllocations() + "," + metrics.getMaxDepth() + "\n");
+            }
 
-        Point[] points = {
-                new Point(2, 3),
-                new Point(12, 30),
-                new Point(40, 50),
-                new Point(5, 1),
-                new Point(12, 10),
-                new Point(3, 4)
-        };
-        double minDist = ClosestPair.closest(points);
-        System.out.println("Closest Pair distance: " + minDist);
+            // QuickSort
+            for (int n = 100; n <= 1000; n += 100) {
+                int[] arr = rnd.ints(n, -1000, 1000).toArray();
+                metrics.reset();
+                QuickSort.sort(arr, metrics);
+                out.write("quicksort," + n + "," + metrics.getComparisons() + "," +
+                        metrics.getAllocations() + "," + metrics.getMaxDepth() + "\n");
+            }
+
+            // DeterministicSelect
+            for (int n = 100; n <= 1000; n += 100) {
+                int[] arr = rnd.ints(n, -1000, 1000).toArray();
+                int k = rnd.nextInt(n);
+                metrics.reset();
+                DeterministicSelect.select(arr, k, metrics);
+                out.write("select," + n + "," + metrics.getComparisons() + "," +
+                        metrics.getAllocations() + "," + metrics.getMaxDepth() + "\n");
+            }
+
+            // ClosestPair
+            for (int n = 100; n <= 1000; n += 100) {
+                Point[] pts = new Point[n];
+                for (int i = 0; i < n; i++)
+                    pts[i] = new Point(rnd.nextDouble()*1000, rnd.nextDouble()*1000);
+                metrics.reset();
+                ClosestPair.closest(pts, metrics);
+                out.write("closestpair," + n + "," + metrics.getComparisons() + "," +
+                        metrics.getAllocations() + "," + metrics.getMaxDepth() + "\n");
+            }
+        }
+
+        System.out.println("done! results written to results.csv");
     }
 }
